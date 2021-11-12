@@ -39,13 +39,36 @@ const dishes = [
     {id: 8, name: 'Mashed Potatoes', cookId: 4}
 ];
 
+//create a query that returns data for the dishes
 const dishType = new GraphQLObjectType({
     name: 'Dish',
     description: 'A dish made by a firend',
     fields: () => ({
         id: {type: new GraphQLNonNull(GraphQLInt)},
         name: {type: new GraphQLNonNull(GraphQLString)},
-        authorId: {type: new GraphQLNonNull(GraphQLInt)}
+        cookId: {type: new GraphQLNonNull(GraphQLInt)},
+        cook: {
+            type : cookType,
+            resolve: (dish) => {
+                return cooks.find(cook => cook.id === dish.cookId)  //returns cooks inside of dishes array  
+                }
+            }
+    })
+});
+
+//create a query that returns data for cooks
+const cookType = new GraphQLObjectType({
+    name: 'Cook',
+    description: 'Friend who made the dish',
+    fields: () => ({
+        id: {type: new GraphQLNonNull(GraphQLInt)},
+        name: {type: new GraphQLNonNull(GraphQLString)},
+        dishes: {
+            type: new GraphQLList(dishType),
+            resolve: (cook) => {
+                return dishes.filter(dish => dish.cookId === cook.id) //returns an array of the dishes that match both id values
+            }
+        }
     })
 });
 
@@ -54,10 +77,34 @@ const rootQueryType = new GraphQLObjectType({
     name: 'Query',
     description: 'Root Query',
     fields: () => ({
+        dish: {
+            type: dishType,
+            description: 'Single Dish',
+            args: {
+                id: {type: GraphQLInt}
+            },
+            resolve: (parent, args) => dishes.find(dish => dish.id === args.id)  //
+        },
+
         dishes: {
             type: new GraphQLList(dishType),
             description: 'List Of Dishes Made By Freinds',
             resolve: () => dishes  //returning a list of all dishes
+        },
+        
+        cooks: {
+            type: new GraphQLList(cookType),
+            description: 'List Of Freinds',
+            resolve: () => cooks  //returning a list of all dishes
+        },
+
+        cook: {
+            type: cookType,
+            description: 'Individual Friend',
+            args: {
+                id: {type: GraphQLInt}
+            },
+            resolve: (parent,args) => cooks.find(cook => cook.id === args.id)
         }
     })
 });
