@@ -109,9 +109,52 @@ const rootQueryType = new GraphQLObjectType({
     })
 });
 
+//create a query that mutates the data
+const rootMutationType = new GraphQLObjectType({
+    name: 'Mutation',
+    description: 'Root Mutation',
+    fields: () => ({
+        //add a new dish to the dishes array
+        addDish : {
+            type: dishType,
+            description: 'Add a dish',
+            args: { //input arguments
+                name: { type: new GraphQLNonNull(GraphQLString) }, //name can't be null and is a string
+                cookId: { type: new GraphQLNonNull(GraphQLInt) }    //cookId can't be null and is an integer
+            },
+            resolve: (parent, args) => {
+                const newDish = {  id: dishes.length + 1,  //create a new dish object that will be added to the dishes array
+                                name: args.name,        
+                                cookId: args.cookId };
+
+                dishes.push(newDish);  //push the new dish
+
+                return newDish
+            }
+        },
+
+        addCook : {
+            type: cookType,
+            description: 'Add a Friend',
+            args: { //input argument
+                name: { type: new GraphQLNonNull(GraphQLString) },  //name can't be null and is a string
+            },
+            resolve: (parent, args) => {
+                const newCook = {  id: cooks.length + 1,   //create a new cook object that will be added to the cooks array
+                                name: args.name};
+
+                cooks.push(newCook);
+
+                return newCook
+            }
+        },
+    })
+})
+
 //create a new schema
 const schema = new GraphQLSchema({
-    query: rootQueryType
+    query: rootQueryType,
+    mutation: rootMutationType, //for modyfing data POST,PUT,DELETE
 });
 
 
